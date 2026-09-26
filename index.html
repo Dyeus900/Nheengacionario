@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>Nheengatu ↔ Português</title>
+<title>Dicionário Nheengatu ↔ Português</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,600;1,9..144,500&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
@@ -238,6 +238,31 @@
   .sub-item { font-size: 0.88rem; margin: 3px 0; }
   .sub-item .lema { font-size: 0.95rem; }
 
+  .conjugacao {
+    margin-top: 10px;
+    padding: 10px 12px;
+    background: var(--paper-raised);
+    border-radius: 3px;
+    border: 1px solid var(--rule);
+  }
+  .conj-linha {
+    display: flex;
+    justify-content: space-between;
+    gap: 12px;
+    font-size: 0.88rem;
+    padding: 2px 0;
+  }
+  .conj-pessoa {
+    color: var(--muted);
+    font-style: italic;
+    flex-shrink: 0;
+  }
+  .conj-forma {
+    font-family: 'Fraunces', serif;
+    color: var(--leaf-deep);
+    text-align: right;
+  }
+
   details.more { margin-top: 8px; }
   details.more summary {
     font-size: 0.76rem;
@@ -285,7 +310,6 @@
   </div>
 </main>
 
-
 <script>
 async function loadData() {
   const res = await fetch('dicionario_json.gz');
@@ -301,6 +325,67 @@ function stripAccents(s) {
   return s.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase();
 }
 const norm = s => stripAccents(s || '');
+const PESSOAS = ['1sg', '2sg', '3sg', '1pl', '2pl', '3pl'];
+const PESSOA_LABEL = {
+  '1sg': 'eu', '2sg': 'tu/você', '3sg': 'ele/ela',
+  '1pl': 'nós', '2pl': 'vós/vocês', '3pl': 'eles/elas',
+};
+const PRONOMES_2A_CLASSE = { '1sg': 'se', '2sg': 'ne', '3sg': 'i', '1pl': 'yané', '2pl': 'pe', '3pl': 'aintá' };
+const PREFIXOS_1A_CLASSE = { '1sg': 'a-', '2sg': 're-', '3sg': 'u-', '1pl': 'ya-', '2pl': 'pe-', '3pl': 'u-' };
+
+function liga(prefixo, tema) {
+  return prefixo.replace(/-$/, '') + tema;
+}
+
+function conjugarClasse1(tema) {
+  const out = {};
+  PESSOAS.forEach(p => { out[p] = liga(PREFIXOS_1A_CLASSE[p], tema); });
+  return out;
+}
+
+function conjugarClasse2(tema, prefixoRelacional) {
+  const out = {};
+  if (!prefixoRelacional || !prefixoRelacional.length) {
+    PESSOAS.forEach(p => { out[p] = `${PRONOMES_2A_CLASSE[p]} ${tema}`; });
+    return out;
+  }
+  const [r1, r2] = prefixoRelacional;
+  PESSOAS.forEach(p => {
+    out[p] = p === '3sg' ? liga(r2, tema) : `${PRONOMES_2A_CLASSE[p]} ${liga(r1, tema)}`;
+  });
+  return out;
+}
+
+function conjugarClasse3(tema) {
+  return { '3sg': tema, '3pl': tema };
+}
+
+function conjugarVerbo(tema, classe, prefixoRelacional) {
+  if (classe === '1') return conjugarClasse1(tema);
+  if (classe === '2' || classe === '2adj') return conjugarClasse2(tema, prefixoRelacional);
+  if (classe === '3') return conjugarClasse3(tema);
+  return null;
+}
+
+const CLASSE_LABEL = { '1': '1ª classe', '2': '2ª classe', '2adj': '2ª classe / adjetivo', '3': '3ª classe' };
+
+function renderConjugacao(p) {
+  let classe = p.cv, prefixo = p.pr;
+  if (!classe) {
+    const aComClasse = (p.a || []).find(a => a.cv);
+    if (aComClasse) { classe = aComClasse.cv; prefixo = aComClasse.pr; }
+  }
+  if (!classe) return '';
+  const formas = conjugarVerbo(p.e, classe, prefixo);
+  if (!formas) return '';
+  const linhas = PESSOAS.filter(pe => formas[pe]).map(pe =>
+    `<div class="conj-linha"><span class="conj-pessoa">${PESSOA_LABEL[pe]}</span><span class="conj-forma">${esc(formas[pe])}</span></div>`
+  ).join('');
+  return `<div class="conjugacao">
+    <div class="subentradas-label">CONJUGAÇÃO (${CLASSE_LABEL[classe] || classe})</div>
+    ${linhas}
+  </div>`;
+}
 
 let DATA = [];
 let indexed = [];
@@ -328,21 +413,17 @@ function buildIndex() {
     };
   });
 }
-
 const resultsEl = document.getElementById('results');
 const countEl = document.getElementById('count');
 const qEl = document.getElementById('q');
-
 function tagLabel(t) {
   if (t === 'variante') return 'variante';
   if (t === 'alomorfe') return 'alomorfe';
   return null;
 }
-
 function renderExemplo(x) {
   return `<div class="ex"><span class="nheeng">${esc(x.n)}</span><span class="trad">${esc(x.t)}</span></div>`;
 }
-
 function renderAcepCompact(a) {
   let h = `<div class="acep"><span class="acep-n">${a.n})</span><span class="def">${esc(a.d)}</span></div>`;
   (a.s || []).forEach(s => {
@@ -350,7 +431,6 @@ function renderAcepCompact(a) {
   });
   return h;
 }
-
 function renderExtra(p) {
   let h = '';
   if (p.lit) h += `<div class="lit">lit., ${esc(p.lit)}</div>`;
@@ -359,6 +439,7 @@ function renderExtra(p) {
   } else if (p.t === 'alomorfe' && p.ad) {
     h += `<div class="redirect">alomorfe de <b onclick="goTo('${escJs(p.ad)}')">${esc(p.ad)}</b></div>`;
   }
+  h += renderConjugacao(p);
   (p.a || []).forEach(a => (a.x || []).forEach(x => h += renderExemplo(x)));
   if (p.et) h += `<div class="lit">etim.: ${esc(p.et)}</div>`;
   if (p.sb && p.sb.length) {
@@ -413,14 +494,12 @@ function esc(s) {
   return (s || '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 }
 function escJs(s) { return (s || '').replace(/'/g, "\\'"); }
-
 function goTo(word) {
   qEl.value = word;
   currentPage = 1;
   search();
   window.scrollTo({ top: 0, behavior: 'smooth' });
 }
-
 let pageSize = 30;
 let currentPage = 1;
 let currentResults = [];
@@ -438,10 +517,12 @@ function computeResults(q) {
     startLema: [], wordLema: [],
     startSub: [], containsLema: [], containsSub: [],
   };
-  const defWord = [], defSub = [];
+  const defWord = [], defSub = []; // { p, score }
+
   for (const item of indexed) {
     const mainLema = item.lema;
-    const subChunks = item.lemaChunks.slice(1); 
+    const subChunks = item.lemaChunks.slice(1); // formas compostas / adendos
+
     if (mainLema === qn) { buckets.exactLema.push(item.p); continue; }
     if (subChunks.includes(qn)) { buckets.exactSub.push(item.p); continue; }
     if (mainLema.startsWith(qn)) { buckets.startLema.push(item.p); continue; }
@@ -449,6 +530,7 @@ function computeResults(q) {
     if (subChunks.some(c => c.startsWith(qn))) { buckets.startSub.push(item.p); continue; }
     if (mainLema.includes(qn)) { buckets.containsLema.push(item.p); continue; }
     if (subChunks.some(c => c.includes(qn))) { buckets.containsSub.push(item.p); continue; }
+
     let bestWord = Infinity, bestSub = Infinity;
     for (const c of item.defChunks) {
       if (!c.includes(qn)) continue;
