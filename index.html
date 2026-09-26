@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>Dicionário Nheengatu ↔ Português</title>
+<title>Nheengatu ↔ Português</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,600;1,9..144,500&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
@@ -287,7 +287,6 @@
 
 
 <script>
-
 async function loadData() {
   const res = await fetch('dicionario_json.gz');
   const buf = new Uint8Array(await res.arrayBuffer());
@@ -422,6 +421,15 @@ function goTo(word) {
   window.scrollTo({ top: 0, behavior: 'smooth' });
 }
 
+let pageSize = 30;
+let currentPage = 1;
+let currentResults = [];
+function escapeRegex(s) {
+  return s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+}
+function isWholeWord(chunk, qn) {
+  return new RegExp(`(^|[^a-z])${escapeRegex(qn)}([^a-z]|$)`).test(chunk);
+}
 function computeResults(q) {
   const qn = norm(q);
   if (!qn) return [];
@@ -430,12 +438,10 @@ function computeResults(q) {
     startLema: [], wordLema: [],
     startSub: [], containsLema: [], containsSub: [],
   };
-  const defWord = [], defSub = []; // { p, score }
-
+  const defWord = [], defSub = [];
   for (const item of indexed) {
     const mainLema = item.lema;
-    const subChunks = item.lemaChunks.slice(1); // formas compostas / adendos
-
+    const subChunks = item.lemaChunks.slice(1); 
     if (mainLema === qn) { buckets.exactLema.push(item.p); continue; }
     if (subChunks.includes(qn)) { buckets.exactSub.push(item.p); continue; }
     if (mainLema.startsWith(qn)) { buckets.startLema.push(item.p); continue; }
@@ -443,7 +449,6 @@ function computeResults(q) {
     if (subChunks.some(c => c.startsWith(qn))) { buckets.startSub.push(item.p); continue; }
     if (mainLema.includes(qn)) { buckets.containsLema.push(item.p); continue; }
     if (subChunks.some(c => c.includes(qn))) { buckets.containsSub.push(item.p); continue; }
-
     let bestWord = Infinity, bestSub = Infinity;
     for (const c of item.defChunks) {
       if (!c.includes(qn)) continue;
