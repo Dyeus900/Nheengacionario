@@ -1,0 +1,545 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Dicionário Nheengatu ↔ Português</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,600;1,9..144,500&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --paper: #EFEAD9;
+    --paper-raised: #F7F4E9;
+    --ink: #23291F;
+    --ink-soft: #4A5240;
+    --muted: #8B8267;
+    --leaf: #57683B;
+    --leaf-deep: #3E4D2A;
+    --river: #345067;
+    --rule: #D8D0B8;
+    --card-shadow: rgba(35, 41, 31, 0.08);
+    font-size: 16px;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --paper: #1B1E17;
+      --paper-raised: #23271D;
+      --ink: #EAE6D6;
+      --ink-soft: #C8C3AC;
+      --muted: #8D8873;
+      --leaf: #9CB37B;
+      --leaf-deep: #B7CB98;
+      --river: #7FA0BE;
+      --rule: #3A3E30;
+      --card-shadow: rgba(0, 0, 0, 0.35);
+    }
+  }
+  :root[data-theme="dark"] {
+    --paper: #1B1E17;
+    --paper-raised: #23271D;
+    --ink: #EAE6D6;
+    --ink-soft: #C8C3AC;
+    --muted: #8D8873;
+    --leaf: #9CB37B;
+    --leaf-deep: #B7CB98;
+    --river: #7FA0BE;
+    --rule: #3A3E30;
+    --card-shadow: rgba(0, 0, 0, 0.35);
+  }
+  * { box-sizing: border-box; }
+  html, body {
+    margin: 0;
+    background: var(--paper);
+    color: var(--ink);
+    font-family: 'IBM Plex Sans', sans-serif;
+    padding-top: env(safe-area-inset-top, 0px);
+    padding-bottom: env(safe-area-inset-bottom, 0px);
+  }
+  html { scroll-padding-top: env(safe-area-inset-top, 0px); }
+
+  header {
+    position: sticky;
+    top: env(safe-area-inset-top, 0px);
+    background: var(--paper);
+    border-bottom: 1px solid var(--rule);
+    padding: 28px 20px 18px;
+    z-index: 5;
+  }
+  .wrap { max-width: 720px; margin: 0 auto; }
+  h1 {
+    font-family: 'Fraunces', serif;
+    font-weight: 600;
+    font-size: 1.9rem;
+    letter-spacing: -0.01em;
+    margin: 0 0 2px;
+    color: var(--leaf-deep);
+  }
+  h1 .sep { color: var(--muted); font-weight: 400; padding: 0 6px; }
+  .tagline {
+    font-size: 0.82rem;
+    color: var(--muted);
+    margin: 0 0 16px;
+  }
+  .search-box {
+    position: relative;
+  }
+  #q {
+    width: 100%;
+    font-family: 'Fraunces', serif;
+    font-size: 1.25rem;
+    font-style: italic;
+    padding: 12px 16px;
+    border: 1px solid var(--rule);
+    border-radius: 3px;
+    background: var(--paper-raised);
+    color: var(--ink);
+    outline: none;
+  }
+  #q:focus { border-color: var(--leaf); }
+  #count {
+    font-size: 0.78rem;
+    color: var(--muted);
+    margin-top: 8px;
+  }
+  .count-row {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+  .page-size {
+    font-size: 0.72rem;
+    color: var(--muted);
+    display: flex;
+    align-items: center;
+    gap: 4px;
+  }
+  .page-size button {
+    font-family: 'IBM Plex Sans', sans-serif;
+    font-size: 0.72rem;
+    background: none;
+    border: 1px solid var(--rule);
+    color: var(--muted);
+    border-radius: 2px;
+    padding: 2px 7px;
+    cursor: pointer;
+  }
+  .page-size button.active {
+    border-color: var(--leaf);
+    color: var(--leaf-deep);
+    font-weight: 600;
+  }
+  .pager {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 16px;
+    padding: 24px 0 40px;
+    font-size: 0.85rem;
+    color: var(--muted);
+  }
+  .pager button {
+    font-family: 'IBM Plex Sans', sans-serif;
+    font-size: 0.82rem;
+    background: none;
+    border: 1px solid var(--rule);
+    color: var(--ink-soft);
+    border-radius: 3px;
+    padding: 6px 12px;
+    cursor: pointer;
+  }
+  .pager button:disabled { opacity: 0.35; cursor: default; }
+  .pager button:not(:disabled):hover { border-color: var(--leaf); }
+  main { max-width: 720px; margin: 0 auto; padding: 16px 20px 60px; }
+  .empty {
+    text-align: center;
+    color: var(--muted);
+    padding: 60px 20px;
+    font-style: italic;
+    font-family: 'Fraunces', serif;
+  }
+
+  .entry {
+    padding: 20px 0;
+    border-bottom: 1px solid var(--rule);
+  }
+  .entry:first-child { padding-top: 4px; }
+  .headline {
+    display: flex;
+    align-items: baseline;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-bottom: 6px;
+  }
+  .lema {
+    font-family: 'Fraunces', serif;
+    font-weight: 600;
+    font-size: 1.5rem;
+    color: var(--leaf-deep);
+  }
+  .hom { font-size: 0.95rem; color: var(--muted); vertical-align: super; }
+  .pos {
+    font-style: italic;
+    color: var(--muted);
+    font-size: 0.92rem;
+  }
+  .tag {
+    font-size: 0.68rem;
+    letter-spacing: 0.04em;
+    color: var(--river);
+    border: 1px solid var(--river);
+    border-radius: 2px;
+    padding: 1px 5px;
+  }
+  .lit {
+    font-size: 0.85rem;
+    color: var(--muted);
+    margin-bottom: 6px;
+  }
+  .redirect {
+    font-size: 0.95rem;
+    color: var(--ink-soft);
+  }
+  .redirect b { color: var(--leaf); cursor: pointer; }
+
+  .acep { margin: 8px 0; }
+  .acep-n {
+    font-weight: 600;
+    color: var(--muted);
+    margin-right: 4px;
+  }
+  .def { color: var(--ink); }
+  .sub { margin: 4px 0 4px 20px; }
+  .sub-l { font-weight: 600; color: var(--muted); margin-right: 4px; }
+
+  .ex {
+    margin: 6px 0 6px 4px;
+    padding-left: 12px;
+    border-left: 2px solid var(--rule);
+    font-size: 0.92rem;
+  }
+  .ex .nheeng { font-style: italic; color: var(--ink-soft); }
+  .ex .trad { color: var(--muted); }
+  .ex .trad::before { content: "— "; }
+
+  .subentradas {
+    margin-top: 10px;
+    padding-top: 10px;
+    border-top: 1px dashed var(--rule);
+  }
+  .subentradas-label {
+    font-size: 0.7rem;
+    letter-spacing: 0.06em;
+    color: var(--muted);
+    margin-bottom: 6px;
+  }
+  .sub-item { font-size: 0.88rem; margin: 3px 0; }
+  .sub-item .lema { font-size: 0.95rem; }
+
+  details.more { margin-top: 8px; }
+  details.more summary {
+    font-size: 0.76rem;
+    letter-spacing: 0.03em;
+    color: var(--river);
+    cursor: pointer;
+    list-style: none;
+  }
+  details.more summary::-webkit-details-marker { display: none; }
+  details.more summary::before { content: "ver mais "; }
+  details.more[open] summary::before { content: "ver menos "; }
+  details.more summary::after { content: "▾"; font-size: 0.6rem; margin-left: 2px; }
+  details.more[open] summary::after { content: "▴"; }
+  details.more .more-body { margin-top: 8px; }
+
+  ::selection { background: var(--leaf); color: var(--paper); }
+</style>
+</head>
+<body>
+<header>
+  <div class="wrap">
+    <h1>nheengatu<span class="sep">↔</span>português</h1>
+    <p class="tagline">Dicionário de Marcel Twardowsky Avila (2021) · busque por uma palavra em qualquer um dos dois idiomas</p>
+    <div class="search-box">
+      <input id="q" type="text" placeholder="mukũi, açaí, bakurí, mulher…" autocomplete="off" autofocus>
+    </div>
+    <div class="count-row">
+      <div id="count"></div>
+      <div class="page-size" id="pageSizeToggle">
+        <span>por página:</span>
+        <button data-size="30" class="active">30</button>
+        <button data-size="60">60</button>
+      </div>
+    </div>
+  </div>
+</header>
+<main>
+  <div class="wrap">
+    <div id="results"></div>
+    <div class="pager" id="pager" style="display:none;">
+      <button id="pagerPrev">‹ anterior</button>
+      <span id="pagerLabel"></span>
+      <button id="pagerNext">próxima ›</button>
+    </div>
+  </div>
+</main>
+
+
+<script>
+
+async function loadData() {
+  const res = await fetch('dicionario_json.gz');
+  const buf = new Uint8Array(await res.arrayBuffer());
+  const isGzip = buf.length > 2 && buf[0] === 0x1f && buf[1] === 0x8b;
+  const text = isGzip
+    ? await new Response(new Blob([buf]).stream().pipeThrough(new DecompressionStream('gzip'))).text()
+    : new TextDecoder('utf-8').decode(buf);
+  return JSON.parse(text);
+}
+
+function stripAccents(s) {
+  return s.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase();
+}
+const norm = s => stripAccents(s || '');
+
+let DATA = [];
+let indexed = [];
+function buildIndex() {
+  indexed = DATA.map(p => {
+    const lemaChunks = [p.e];
+    const defChunks = [];
+    (p.a || []).forEach(a => {
+      if (a.d) defChunks.push(a.d);
+      (a.s || []).forEach(s => { if (s.d) defChunks.push(s.d); });
+    });
+    (p.sb || []).forEach(s => {
+      lemaChunks.push(s.c);
+      (s.a || []).forEach(a => { if (a.d) defChunks.push(a.d); });
+    });
+    (p.adn || []).forEach(ad => {
+      if (ad.l) lemaChunks.push(ad.l);
+      if (ad.d) defChunks.push(ad.d);
+    });
+    return {
+      p,
+      lema: norm(p.e),
+      lemaChunks: lemaChunks.map(norm),
+      defChunks: defChunks.map(norm),
+    };
+  });
+}
+
+const resultsEl = document.getElementById('results');
+const countEl = document.getElementById('count');
+const qEl = document.getElementById('q');
+
+function tagLabel(t) {
+  if (t === 'variante') return 'variante';
+  if (t === 'alomorfe') return 'alomorfe';
+  return null;
+}
+
+function renderExemplo(x) {
+  return `<div class="ex"><span class="nheeng">${esc(x.n)}</span><span class="trad">${esc(x.t)}</span></div>`;
+}
+
+function renderAcepCompact(a) {
+  let h = `<div class="acep"><span class="acep-n">${a.n})</span><span class="def">${esc(a.d)}</span></div>`;
+  (a.s || []).forEach(s => {
+    h += `<div class="sub"><span class="sub-l">${esc(s.l)})</span><span class="def">${esc(s.d)}</span></div>`;
+  });
+  return h;
+}
+
+function renderExtra(p) {
+  let h = '';
+  if (p.lit) h += `<div class="lit">lit., ${esc(p.lit)}</div>`;
+  if (p.t === 'variante' && p.vd) {
+    h += `<div class="redirect">variante de <b onclick="goTo('${escJs(p.vd)}')">${esc(p.vd)}</b></div>`;
+  } else if (p.t === 'alomorfe' && p.ad) {
+    h += `<div class="redirect">alomorfe de <b onclick="goTo('${escJs(p.ad)}')">${esc(p.ad)}</b></div>`;
+  }
+  (p.a || []).forEach(a => (a.x || []).forEach(x => h += renderExemplo(x)));
+  if (p.et) h += `<div class="lit">etim.: ${esc(p.et)}</div>`;
+  if (p.sb && p.sb.length) {
+    h += `<div class="subentradas"><div class="subentradas-label">FORMAS COMPOSTAS (${p.sb.length})</div>`;
+    p.sb.forEach(s => {
+      const defs = (s.a || []).map(a => a.d).join('; ');
+      h += `<div class="sub-item"><span class="lema">${esc(s.c)}</span> ${s.p ? `<span class="pos">${esc(s.p)}</span> ` : ''}<span class="def">${esc(defs)}</span></div>`;
+    });
+    h += `</div>`;
+  }
+  if (p.adn && p.adn.length) {
+    h += `<div class="subentradas"><div class="subentradas-label">ADENDOS (${p.adn.length})</div>`;
+    p.adn.forEach(ad => {
+      if (ad.l) {
+        h += `<div class="sub-item"><span class="lema">${esc(ad.l)}</span> ${(ad.tg||[]).map(t=>`<span class="tag">${esc(t)}</span>`).join(' ')} <span class="def">${esc(ad.d||'')}</span></div>`;
+        (ad.x || []).forEach(x => h += renderExemplo(x));
+        if (ad.r) h += `<div class="redirect" style="margin-left:8px;">o mesmo que <b onclick="goTo('${escJs(ad.r)}')">${esc(ad.r)}</b></div>`;
+      } else if (ad.raw) {
+        h += `<div class="sub-item"><span class="def">${esc(ad.raw)}</span></div>`;
+      }
+    });
+    h += `</div>`;
+  }
+  if (p.nt && p.nt.length) {
+    h += `<div class="subentradas"><div class="subentradas-label">NOTAS</div>`;
+    p.nt.forEach(t => h += `<div class="sub-item"><span class="def">${esc(t)}</span></div>`);
+    h += `</div>`;
+  }
+  return h;
+}
+
+function renderEntry(p) {
+  let h = `<div class="entry">`;
+  h += `<div class="headline"><span class="lema">${esc(p.e)}</span>`;
+  if (p.h) h += `<span class="hom">${p.h}</span>`;
+  if (p.p) h += `<span class="pos">${esc(p.p)}</span>`;
+  const tl = tagLabel(p.t);
+  if (tl) h += `<span class="tag">${tl}</span>`;
+  (p.tg || []).forEach(t => h += `<span class="tag">${esc(t)}</span>`);
+  h += `</div>`;
+
+  (p.a || []).forEach(a => h += renderAcepCompact(a));
+
+  const extra = renderExtra(p);
+  if (extra) h += `<details class="more"><summary></summary><div class="more-body">${extra}</div></details>`;
+
+  h += `</div>`;
+  return h;
+}
+
+function esc(s) {
+  return (s || '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+}
+function escJs(s) { return (s || '').replace(/'/g, "\\'"); }
+
+function goTo(word) {
+  qEl.value = word;
+  currentPage = 1;
+  search();
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+function computeResults(q) {
+  const qn = norm(q);
+  if (!qn) return [];
+  const buckets = {
+    exactLema: [], exactSub: [],
+    startLema: [], wordLema: [],
+    startSub: [], containsLema: [], containsSub: [],
+  };
+  const defWord = [], defSub = []; // { p, score }
+
+  for (const item of indexed) {
+    const mainLema = item.lema;
+    const subChunks = item.lemaChunks.slice(1); // formas compostas / adendos
+
+    if (mainLema === qn) { buckets.exactLema.push(item.p); continue; }
+    if (subChunks.includes(qn)) { buckets.exactSub.push(item.p); continue; }
+    if (mainLema.startsWith(qn)) { buckets.startLema.push(item.p); continue; }
+    if (isWholeWord(mainLema, qn)) { buckets.wordLema.push(item.p); continue; }
+    if (subChunks.some(c => c.startsWith(qn))) { buckets.startSub.push(item.p); continue; }
+    if (mainLema.includes(qn)) { buckets.containsLema.push(item.p); continue; }
+    if (subChunks.some(c => c.includes(qn))) { buckets.containsSub.push(item.p); continue; }
+
+    let bestWord = Infinity, bestSub = Infinity;
+    for (const c of item.defChunks) {
+      if (!c.includes(qn)) continue;
+      if (c.length < bestSub) bestSub = c.length;
+      if (c.length < bestWord && isWholeWord(c, qn)) bestWord = c.length;
+    }
+    if (bestWord < Infinity) defWord.push({ p: item.p, score: bestWord });
+    else if (bestSub < Infinity) defSub.push({ p: item.p, score: bestSub });
+  }
+
+  defWord.sort((a, b) => a.score - b.score);
+  defSub.sort((a, b) => a.score - b.score);
+
+  return [].concat(
+    buckets.exactLema, buckets.exactSub,
+    buckets.startLema, buckets.wordLema, buckets.startSub,
+    buckets.containsLema, buckets.containsSub,
+    defWord.map(x => x.p), defSub.map(x => x.p)
+  );
+}
+
+const pagerEl = document.getElementById('pager');
+const pagerLabel = document.getElementById('pagerLabel');
+const pagerPrev = document.getElementById('pagerPrev');
+const pagerNext = document.getElementById('pagerNext');
+
+function renderPage() {
+  const total = currentResults.length;
+  if (!total) {
+    pagerEl.style.display = 'none';
+    resultsEl.innerHTML = qEl.value.trim()
+      ? `<div class="empty">nenhuma entrada encontrada para “${esc(qEl.value)}”</div>`
+      : '';
+    return;
+  }
+  const totalPages = Math.max(1, Math.ceil(total / pageSize));
+  currentPage = Math.min(Math.max(1, currentPage), totalPages);
+  const start = (currentPage - 1) * pageSize;
+  const pageItems = currentResults.slice(start, start + pageSize);
+  resultsEl.innerHTML = pageItems.map(renderEntry).join('');
+  countEl.textContent = `${total.toLocaleString('pt-BR')} resultado${total > 1 ? 's' : ''}`;
+  if (totalPages > 1) {
+    pagerEl.style.display = 'flex';
+    pagerLabel.textContent = `página ${currentPage} de ${totalPages}`;
+    pagerPrev.disabled = currentPage <= 1;
+    pagerNext.disabled = currentPage >= totalPages;
+  } else {
+    pagerEl.style.display = 'none';
+  }
+}
+
+function search() {
+  const q = qEl.value.trim();
+  if (!q) {
+    countEl.textContent = `${DATA.length.toLocaleString('pt-BR')} entradas — digite para buscar`;
+    resultsEl.innerHTML = '';
+    pagerEl.style.display = 'none';
+    return;
+  }
+  currentResults = computeResults(q);
+  renderPage();
+}
+
+pagerPrev.addEventListener('click', () => { currentPage--; renderPage(); window.scrollTo({ top: 0, behavior: 'smooth' }); });
+pagerNext.addEventListener('click', () => { currentPage++; renderPage(); window.scrollTo({ top: 0, behavior: 'smooth' }); });
+
+document.getElementById('pageSizeToggle').addEventListener('click', e => {
+  const btn = e.target.closest('button[data-size]');
+  if (!btn) return;
+  pageSize = parseInt(btn.dataset.size, 10);
+  currentPage = 1;
+  document.querySelectorAll('.page-size button').forEach(b => b.classList.toggle('active', b === btn));
+  renderPage();
+});
+
+let debounceTimer;
+qEl.addEventListener('input', () => {
+  clearTimeout(debounceTimer);
+  debounceTimer = setTimeout(() => { currentPage = 1; search(); }, 80);
+});
+
+async function init() {
+  qEl.disabled = true;
+  countEl.textContent = 'carregando dicionário…';
+  try {
+    DATA = await loadData();
+  } catch (e) {
+    countEl.textContent = 'não foi possível carregar os dados do dicionário.';
+    return;
+  }
+  buildIndex();
+  qEl.disabled = false;
+  search();
+}
+
+init();
+</script>
+</body>
+</html>
